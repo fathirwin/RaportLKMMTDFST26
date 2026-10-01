@@ -15,9 +15,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 import data
 import db
 
-app = Flask(__name__, 
-            template_folder=os.path.abspath('templates'), 
-            static_folder=os.path.abspath('static'))
+app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(32)
 app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax")
 
