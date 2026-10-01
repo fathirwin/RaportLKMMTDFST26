@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }}{% if r %} — {{ r.nama }}{% endif %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="raport-page">
+    <a class="back-link" href="{{ url_for('index') }}">← Cek NIM lain</a>
+
+    {% include "_flash.html" %}
+
+    {% if not_found %}
+      <div class="not-found">
+        <h2>Data tidak ditemukan</h2>
+        <p>NIM <strong>{{ nim }}</strong> tidak terdaftar pada sistem LKMM TD 2026.</p>
+      </div>
+    {% else %}
+
+      <!-- Bar admin (hanya tampil jika sudah login admin) -->
+      {% if is_admin %}
+        <div class="admin-bar">
+          <span>Mode admin</span>
+          <div class="row-actions">
+            <a class="btn btn-secondary btn-small" href="{{ url_for('admin_edit', nim=r.nim) }}">Edit Nilai</a>
+            <a class="btn btn-secondary btn-small" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+            <form method="POST" action="{{ url_for('admin_finalisasi', nim=r.nim) }}">
+              <input type="hidden" name="next" value="raport">
+              {% if r.finalized %}
+                <input type="hidden" name="action" value="buka_kembali">
+                <button class="btn btn-small" type="submit">Buka Kembali (Batalkan Finalisasi)</button>
+              {% else %}
+                <input type="hidden" name="action" value="finalisasi">
+                <button class="btn btn-small" type="submit">Finalisasi Sekarang</button>
+              {% endif %}
+            </form>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="raport-header">
+        <h1>{{ r.nama }}</h1>
+        <div class="meta">
+          <span>{{ r.nim }}</span>
+          {% if r.kelompok %}<span>{{ r.kelompok }}</span>{% endif %}
+          {% if r.prodi %}<span>{{ r.prodi }}</span>{% endif %}
+        </div>
+      </div>
+
+      {% if r.finalized %}
+        <div class="status-box final">
+          <div class="title">Sudah Difinalisasi ✓</div>
+          <p>Nilai di bawah ini adalah nilai resmi akhir dan tidak akan berubah lagi.</p>
+        </div>
+      {% else %}
+        <div class="status-box belum">
+          <div class="title">Belum Difinalisasi</div>
+          <p>Nilai di bawah ini belum di finalisasi oleh Aspem, jika terdapat kesalahan segera hubungi Pendamping Kelompok.</p>
+        </div>
+      {% endif %}
+
+      <div class="grid-3">
+        {% for judul, hint, blok in [
+          ('Nilai Praktik Materi', 'Jumlah dari 9 praktik materi', r.praktik_materi),
+          ('Nilai Penugasan', 'Jumlah dari 4 penugasan', r.penugasan),
+          ('Nilai Karakter', 'Jumlah dari 3 aspek karakter', r.karakter)] %}
+        <div class="card">
+          <h3>{{ judul }}</h3>
+          <p class="card-hint">{{ hint }}</p>
+          <div class="card-total">{{ blok.total }}</div>
+          {% for item in blok.detail %}
+            <div class="item-row">
+              <span class="item-name">{{ item.nama }}<span class="item-bobot"></span></span>
+              <span class="item-score">{{ item.nilai if item.nilai is not none else '—' }}</span>
+            </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="grid-2">
+        <div class="card total-card">
+          <h3>Nilai Total</h3>
+          <p class="card-hint">Jumlah tiga komponen di atas</p>
+          <div class="card-total">{{ r.nilai_total }}</div>
+          <div class="breakdown">
+            <span>Praktik Materi {{ r.praktik_materi.total }}</span>
+            <span>Penugasan {{ r.penugasan.total }}</span>
+            <span>Karakter {{ r.karakter.total }}</span>
+          </div>
+        </div>
+
+        <div class="card status-card">
+          <h3>Status Kelulusan</h3>
+          <div class="status-pill {{ r.status_color }}">{{ r.status }}</div>
+          <p class="status-desc">
+            KKM Lulus: {{ r.kkm_lulus }} &nbsp;·&nbsp; Nilai di bawah {{ r.kkm_lulus }} dinyatakan Lulus bersyarat
+          </p>
+        </div>
+      </div>
+      
+      {% if r.status == 'Lulus' %}
+        <div class="card tugas-card">
+          <h3>Selamat telah Lulus LKMM-TD FST 2026!</h3>
+          <p class="card-hint"><b>Selamat telah menyelesaikan LKMM-TD, Kawah Candradimuka dalam teman-teman belajar, berpikir, dan bekerja sama dengan rekan baru dari beragam latar belakang. Kami harap, LKMM-TD sudah menjadi rumah inklusif dalam langkah awal manifestasi mimpi di fakultas kebanggaan kita. 
+          <br>
+          Kami memohon maaf jikalau banyak kekurangan yang terjadi selama kegiatan, baik yang disengaja maupun tidak disengaja.
+          <br>
+          Tetaplah membawa bara api perjuangan, Terima Kasih dan Kami Tunggu Kontribusi Kalian di FST!</b>
+          <br>
+          Hormat kami, Asisten Pemandu LKMM-TD FST 26.
+          </p>
+          <p class="card-hint"><i>*Sertifikat LKMM-TD akan diberikan oleh Pendamping Kelompok. Pengumuman lebih lanjut akan disampaikan melalui Grup Delegasi Kelompok masing-masing. dan Isi link feedback berikut sebagai syarat pengambilan sertifikat (tunjukkan bukti pengisian pada PK)</i></p>
+          {% if r.link_feedback %}
+            <a class="btn" href="{{ r.link_feedback }}" target="_blank" rel="noopener noreferrer">Buka Link Feedback ↗</a>
+          {% else %}
+            <p class="muted">Link tugas belum tersedia. Silakan hubungi panitia.</p>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if r.status == 'Lulus Bersyarat' %}
+        <div class="card tugas-card">
+          <h3>Tugas Syarat Lulus</h3>
+          <p class="card-hint">Nilai Anda belum mencapai KKM. Kerjakan tugas berikut sebagai syarat kelulusan.</p>
+          {% if r.link_tugas %}
+            <a class="btn" href="{{ r.link_tugas }}" target="_blank" rel="noopener noreferrer">Buka Tugas Syarat Lulus ↗</a>
+          {% else %}
+            <p class="muted">Link tugas belum tersedia. Silakan hubungi panitia.</p>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    {% endif %}
+  </div>
+</body>
+</html>

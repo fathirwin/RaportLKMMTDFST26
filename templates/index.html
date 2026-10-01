@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="search-page">
+    <div class="search-card">
+      <div class="logo">
+        <img src="{{ url_for('static', filename='image/logo-bem.png') }}" alt="Logo BEM">
+      </div>
+      <h1>{{ title }}</h1>
+      <p class="subtitle">{{ subtitle }}</p>
+
+      <div class="panel">
+        <h2>Masukkan NIM</h2>
+        <p class="hint">Hasil penilaian akan tampil setelah NIM dikirim.</p>
+
+        {% include "_flash.html" %}
+
+        <form action="{{ url_for('cek_raport') }}" method="POST">
+          <label for="nim">NIM</label>
+          <input type="text" id="nim" name="nim" placeholder="Contoh: 187241054" required>
+          <button type="submit" class="btn">Cek Raport</button>
+        </form>
+      </div>
+
+      <div class="admin-entry">
+        {% if is_admin %}
+          <a class="btn btn-secondary" href="{{ url_for('admin_dashboard') }}">Buka Dashboard Admin</a>
+        {% else %}
+          <a class="btn btn-secondary" href="{{ url_for('admin_login') }}">Masuk sebagai Admin</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

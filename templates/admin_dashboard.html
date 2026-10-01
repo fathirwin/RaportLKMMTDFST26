@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin — {{ title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="admin-wrap">
+    <div class="admin-head">
+      <div>
+        <h1>Dashboard Admin</h1>
+        <p class="muted">{{ peserta|length }} peserta{% if q %} ditemukan untuk “{{ q }}”{% else %} terdaftar{% endif %}</p>
+      </div>
+      <div class="row-actions">
+        <a class="btn btn-small" href="{{ url_for('admin_tambah') }}">+ Tambah Peserta</a>
+        <a class="btn btn-secondary btn-small" href="{{ url_for('index') }}">Halaman Cek NIM</a>
+        <form method="POST" action="{{ url_for('admin_logout') }}">
+          <button class="btn btn-secondary btn-small" type="submit">Keluar</button>
+        </form>
+      </div>
+    </div>
+
+    {% include "_flash.html" %}
+
+    <form class="toolbar" method="GET">
+      <input type="text" name="q" value="{{ q }}" placeholder="Cari NIM atau nama">
+      <button class="btn btn-secondary btn-small" type="submit">Cari</button>
+    </form>
+
+    <div class="card table-wrap">
+      {% if peserta %}
+      <table class="data-table">
+        <thead>
+          <tr><th>NIM</th><th>Nama</th><th>Kelompok</th><th>Prodi</th><th>Status</th><th>Aksi</th></tr>
+        </thead>
+        <tbody>
+          {% for p in peserta %}
+          <tr>
+            <td>{{ p.nim }}</td>
+            <td>{{ p.nama }}</td>
+            <td>{{ p.kelompok or '—' }}</td>
+            <td>{{ p.prodi or '—' }}</td>
+            <td>
+              {% if p.finalized %}<span class="chip green">Final</span>
+              {% else %}<span class="chip amber">Belum final</span>{% endif %}
+            </td>
+            <td>
+              <div class="row-actions">
+                <a class="btn btn-secondary btn-small" href="{{ url_for('raport', nim=p.nim) }}">Lihat</a>
+                <a class="btn btn-secondary btn-small" href="{{ url_for('admin_edit', nim=p.nim) }}">Edit Nilai</a>
+                <form method="POST" action="{{ url_for('admin_finalisasi', nim=p.nim) }}">
+                  <input type="hidden" name="next" value="dashboard">
+                  <input type="hidden" name="action" value="{{ 'buka_kembali' if p.finalized else 'finalisasi' }}">
+                  <button class="btn btn-small" type="submit">{{ 'Buka Kembali' if p.finalized else 'Finalisasi' }}</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="muted">Belum ada peserta{% if q %} yang cocok dengan pencarian{% endif %}.</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ 'Tambah Peserta' if mode == 'tambah' else 'Edit Nilai' }} — {{ title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="admin-wrap">
+    <a class="back-link" href="{{ url_for('admin_dashboard') }}">← Kembali ke dashboard</a>
+
+    <div class="admin-head">
+      <div>
+        <h1>{{ 'Tambah Peserta' if mode == 'tambah' else 'Edit Nilai' }}</h1>
+        <p class="muted">
+          {% if mode == 'tambah' %}Nilai boleh dikosongkan dan diisi belakangan.
+          {% else %}{{ p.nama }} · {{ p.nim }} — kosongkan kolom untuk menandai “belum dinilai”.{% endif %}
+        </p>
+      </div>
+      {% if mode == 'edit' %}
+        <a class="btn btn-secondary btn-small" href="{{ url_for('raport', nim=p.nim) }}">Lihat Raport</a>
+      {% endif %}
+    </div>
+
+    {% include "_flash.html" %}
+
+    <form method="POST">
+      <div class="card form-card">
+        <h3>Data Peserta</h3>
+        <p class="card-hint">&nbsp;</p>
+        <div class="form-grid">
+          <div>
+            <label for="nim">NIM</label>
+            <input type="text" id="nim" name="nim" value="{{ p.nim }}" {{ 'readonly' if mode == 'edit' else 'required' }}>
+          </div>
+          <div>
+            <label for="nama">Nama lengkap</label>
+            <input type="text" id="nama" name="nama" value="{{ p.nama }}" required>
+          </div>
+          <div>
+            <label for="kelompok">Kelompok</label>
+            <input type="text" id="kelompok" name="kelompok" value="{{ p.kelompok }}">
+          </div>
+          <div>
+            <label for="prodi">Program studi</label>
+            <input type="text" id="prodi" name="prodi" value="{{ p.prodi }}">
+          </div>
+        </div>
+      </div>
+
+      {% for sec in sections %}
+      <div class="card form-card">
+        <h3>{{ sec.judul }}</h3>
+        <p class="card-hint">Isi angka 0 sampai nilai maksimal tiap item</p>
+        {% for item in sec['items'] %}
+          <div class="nilai-row">
+            <label for="nilai_{{ item.kode }}" style="margin:0;font-weight:400;">
+              {{ item.nama }} <span class="item-bobot">(maks {{ item.maks }})</span>
+            </label>
+            <input type="number" id="nilai_{{ item.kode }}" name="nilai_{{ item.kode }}"
+                   min="0" max="{{ item.maks }}" step="any"
+                   value="{{ nilai_vals.get(item.kode, '') }}">
+          </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+
+      <div class="form-actions">
+        <button class="btn" type="submit">{{ 'Tambah Peserta' if mode == 'tambah' else 'Simpan Perubahan' }}</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin_dashboard') }}">Batal</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

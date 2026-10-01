@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk Admin — {{ title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="search-page">
+    <div class="search-card">
+      <div class="logo">
+        <img src="{{ url_for('static', filename='image/logo-bem.png') }}" alt="Logo BEM">
+      </div>
+      <h1>Masuk sebagai Admin</h1>
+      <p class="subtitle">Finalisasi, edit nilai, dan tambah peserta</p>
+
+      <div class="panel">
+        {% include "_flash.html" %}
+        <form method="POST">
+          <label for="password">Password admin</label>
+          <input type="password" id="password" name="password" required autofocus>
+          <button type="submit" class="btn">Masuk</button>
+        </form>
+      </div>
+
+      <div class="admin-entry">
+        <a class="btn btn-secondary" href="{{ url_for('index') }}">← Kembali ke Cek NIM</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
