@@ -12,9 +12,8 @@ try:
 except ImportError:
     pass
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
-SUPABASE_KEY = os.environ.get("SUPABASE_SECRET_KEY", "")
-
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
+SUPABASE_KEY = os.environ.get("SUPABASE_SECRET_KEY", "").strip()
 
 class DBError(Exception):
     def __init__(self, message, status=None):
