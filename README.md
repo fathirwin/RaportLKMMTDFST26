@@ -5,24 +5,25 @@ Website cek raport berbasis Flask (Python), dengan HTML (Jinja2).
 ## Struktur File
 ```
 raport-lkmm-td/
-├── app.py
 ├── data.py
 ├── db.py                
 ├── requirements.txt     
 ├── .env                 
 ├── .gitignore           
 ├── sql/schema.sql       
-├── static/
-|    ├── style.css
-|    └── image/logo-bem.png    
-└── templates/
-    ├── _flash.html         
-    ├── index.html
-    ├── raport.html
-    ├── admin_login.html    
-    ├── admin_dashboard.html 
-    ├── admin_form.html     
-    └── error.html          
+└── src/
+    ├── app.py
+    ├── static/
+    |    ├── style.css
+    |    └── image/logo-bem.png    
+    └── templates/
+        ├── _flash.html         
+        ├── index.html
+        ├── raport.html
+        ├── admin_login.html    
+        ├── admin_dashboard.html 
+        ├── admin_form.html     
+        └── error.html      
 ```
 
 ## Cara Menjalankan (Lokal)
