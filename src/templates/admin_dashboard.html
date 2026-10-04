@@ -46,7 +46,7 @@
       {% if peserta %}
       <table class="data-table">
         <thead>
-          <tr><th>NIM</th><th>Nama</th><th>Kelompok</th><th>Prodi</th><th>Status</th><th>Aksi</th></tr>
+          <tr><th>NIM</th><th>Nama</th><th>Kelompok</th><th>Prodi</th><th>Nilai</th><th>Status</th><th>Aksi</th></tr>
         </thead>
         <tbody>
           {% for p in peserta %}
@@ -55,6 +55,8 @@
             <td>{{ p.nama }}</td>
             <td>{{ p.kelompok or '—' }}</td>
             <td>{{ p.prodi or '—' }}</td>
+            <td class="nilai-cell">{{ p.nilai_total }}</td>
+            
             <td>
               {% if p.finalized %}<span class="chip green">Final</span>
               {% else %}<span class="chip amber">Belum final</span>{% endif %}

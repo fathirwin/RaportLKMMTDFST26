@@ -26,7 +26,7 @@ EVENT_SUBTITLE = "LKMM-TD FST 2026 — Asisten Pemandu FST 26"
 NIM_RE = re.compile(r"^[A-Za-z0-9]{3,30}$")
 PER_PAGE = 15  # jumlah peserta per halaman di dashboard admin
 SORT_OPTIONS = [("nim", "NIM"), ("nama", "Nama"), ("kelompok", "Kelompok"),
-                ("prodi", "Prodi"), ("finalized", "Status")]
+                ("prodi", "Prodi"), ("nilai_total", "Nilai"), ("finalized", "Status")]
 
 
 # ---------------- helper ----------------
@@ -122,13 +122,18 @@ def admin_dashboard():
     page = request.args.get("page", 1, type=int)
 
     daftar = db.list_peserta()
+    totals = db.get_total_nilai_semua()
+    for p in daftar:
+        p["nilai_total"] = data.fmt(totals.get(p["nim"], 0))
     if q:
         ql = q.lower()
         daftar = [p for p in daftar if ql in p["nim"].lower() or ql in p["nama"].lower()]
 
     # --- pengurutan (naik / turun) ---
     reverse = (order == "desc")
-    if sort == "finalized":
+    if sort == "nilai_total":
+        daftar.sort(key=lambda p: p["nilai_total"], reverse=reverse)
+    elif sort == "finalized":
         daftar.sort(key=lambda p: bool(p["finalized"]), reverse=reverse)
     else:
         terisi = [p for p in daftar if (p.get(sort) or "").strip()]

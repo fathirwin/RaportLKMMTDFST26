@@ -74,6 +74,21 @@ def get_nilai(nim):
     rows = _request("GET", "nilai", params={"nim": f"eq.{nim}", "select": "kode,nilai"}) or []
     return {r["kode"]: r["nilai"] for r in rows}
 
+def get_total_nilai_semua():
+    """Total nilai tiap peserta -> {nim: total}.
+    Supabase membatasi 1000 baris per request, jadi diambil bertahap (halaman demi halaman)."""
+    totals, offset, size = {}, 0, 1000
+    while True:
+        rows = _request("GET", "nilai", params={
+            "select": "nim,nilai", "order": "nim.asc,kode.asc",
+            "limit": size, "offset": offset,
+        }) or []
+        for r in rows:
+            totals[r["nim"]] = totals.get(r["nim"], 0.0) + float(r["nilai"])
+        if len(rows) < size:
+            break
+        offset += size
+    return totals
 
 def upsert_nilai(nim, nilai_map):
     if not nilai_map:
