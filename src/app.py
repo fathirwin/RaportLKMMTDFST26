@@ -24,6 +24,9 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 EVENT_TITLE = "Raport LKMM TD"
 EVENT_SUBTITLE = "LKMM-TD FST 2026 — Asisten Pemandu FST 26"
 NIM_RE = re.compile(r"^[A-Za-z0-9]{3,30}$")
+PER_PAGE = 15  # jumlah peserta per halaman di dashboard admin
+SORT_OPTIONS = [("nim", "NIM"), ("nama", "Nama"), ("kelompok", "Kelompok"),
+                ("prodi", "Prodi"), ("finalized", "Status")]
 
 
 # ---------------- helper ----------------
@@ -109,12 +112,44 @@ def admin_logout():
 @app.route("/admin")
 @admin_required
 def admin_dashboard():
-    q = request.args.get("q", "").strip().lower()
+    q = request.args.get("q", "").strip()
+    sort = request.args.get("sort", "nama")
+    if sort not in dict(SORT_OPTIONS):
+        sort = "nama"
+    order = request.args.get("order", "asc")
+    if order not in ("asc", "desc"):
+        order = "asc"
+    page = request.args.get("page", 1, type=int)
+
     daftar = db.list_peserta()
     if q:
-        daftar = [p for p in daftar if q in p["nim"].lower() or q in p["nama"].lower()]
-    return render_template("admin_dashboard.html", title=EVENT_TITLE, peserta=daftar, q=q)
+        ql = q.lower()
+        daftar = [p for p in daftar if ql in p["nim"].lower() or ql in p["nama"].lower()]
 
+    # --- pengurutan (naik / turun) ---
+    reverse = (order == "desc")
+    if sort == "finalized":
+        daftar.sort(key=lambda p: bool(p["finalized"]), reverse=reverse)
+    else:
+        terisi = [p for p in daftar if (p.get(sort) or "").strip()]
+        kosong = [p for p in daftar if not (p.get(sort) or "").strip()]  # selalu di paling bawah
+        terisi.sort(key=lambda p: p[sort].strip().lower(), reverse=reverse)
+        daftar = terisi + kosong
+
+    # --- pagination ---
+    total = len(daftar)
+    total_pages = max(1, -(-total // PER_PAGE))
+    page = min(max(page or 1, 1), total_pages)
+    start = (page - 1) * PER_PAGE
+    tampil = daftar[start:start + PER_PAGE]
+    page_numbers = list(range(max(1, page - 2), min(total_pages, page + 2) + 1))
+
+    return render_template(
+        "admin_dashboard.html", title=EVENT_TITLE, peserta=tampil, q=q,
+        sort=sort, order=order, sort_options=SORT_OPTIONS,
+        total=total, page=page, total_pages=total_pages, page_numbers=page_numbers,
+        start=start,
+    )
 
 # ---------------- 1. FINALISASI ----------------
 @app.route("/admin/finalisasi/<nim>", methods=["POST"])
@@ -128,7 +163,11 @@ def admin_finalisasi(nim):
     flash("Raport berhasil difinalisasi." if finalize else "Finalisasi dibatalkan, raport dibuka kembali.", "ok")
     if request.form.get("next") == "raport":
         return redirect(url_for("raport", nim=nim))
-    return redirect(url_for("admin_dashboard"))
+    return redirect(url_for(
+        "admin_dashboard",
+        q=request.form.get("q") or None, sort=request.form.get("sort") or None,
+        order=request.form.get("order") or None, page=request.form.get("page") or None,
+    ))
 
 
 # ---------------- 2. EDIT NILAI ----------------

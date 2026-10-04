@@ -364,3 +364,26 @@ table.data-table{width:100%;border-collapse:collapse;font-size:13.5px;}
   border-color:rgba(240,104,92,.35);
 }
 .tugas-card .btn{width:auto;padding:12px 24px;margin-top:6px;}
+
+/* Urutkan + pagination dashboard */
+.toolbar select{
+  padding:9px 12px;
+  background:#0e1320;
+  border:1px solid var(--card-border);
+  border-radius:10px;
+  color:var(--text);
+  font-size:14px;
+}
+.toolbar select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.pagination{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:12px;flex-wrap:wrap;margin-top:16px;
+}
+.pager{display:flex;gap:6px;flex-wrap:wrap;}
+.pager a, .pager span{
+  padding:7px 12px;border-radius:8px;border:1px solid var(--card-border);
+  font-size:13px;text-decoration:none;color:var(--text);
+}
+.pager a:hover{border-color:var(--accent);}
+.pager .current{background:var(--accent);color:#0a0e16;border-color:var(--accent);font-weight:700;}
+.pager .disabled{opacity:.4;}

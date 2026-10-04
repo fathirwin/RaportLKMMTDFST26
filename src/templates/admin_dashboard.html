@@ -11,7 +11,7 @@
     <div class="admin-head">
       <div>
         <h1>Dashboard Admin</h1>
-        <p class="muted">{{ peserta|length }} peserta{% if q %} ditemukan untuk “{{ q }}”{% else %} terdaftar{% endif %}</p>
+        <p class="muted">{{ total }} peserta{% if q %} ditemukan untuk “{{ q }}”{% else %} terdaftar{% endif %}</p>
       </div>
       <div class="row-actions">
         <a class="btn btn-small" href="{{ url_for('admin_tambah') }}">+ Tambah Peserta</a>
@@ -24,9 +24,22 @@
 
     {% include "_flash.html" %}
 
+    <!-- Cari + urutkan (submit akan kembali ke halaman 1) -->
     <form class="toolbar" method="GET">
       <input type="text" name="q" value="{{ q }}" placeholder="Cari NIM atau nama">
-      <button class="btn btn-secondary btn-small" type="submit">Cari</button>
+
+      <select name="sort" aria-label="Urutkan berdasarkan">
+        {% for val, label in sort_options %}
+          <option value="{{ val }}" {{ 'selected' if sort == val }}>Urutkan: {{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="order" aria-label="Arah urutan">
+        <option value="asc"  {{ 'selected' if order == 'asc' }}>Dari atas (A–Z / kecil → besar)</option>
+        <option value="desc" {{ 'selected' if order == 'desc' }}>Dari bawah (Z–A / besar → kecil)</option>
+      </select>
+
+      <button class="btn btn-secondary btn-small" type="submit">Terapkan</button>
     </form>
 
     <div class="card table-wrap">
@@ -52,6 +65,10 @@
                 <a class="btn btn-secondary btn-small" href="{{ url_for('admin_edit', nim=p.nim) }}">Edit Nilai</a>
                 <form method="POST" action="{{ url_for('admin_finalisasi', nim=p.nim) }}">
                   <input type="hidden" name="next" value="dashboard">
+                  <input type="hidden" name="q" value="{{ q }}">
+                  <input type="hidden" name="sort" value="{{ sort }}">
+                  <input type="hidden" name="order" value="{{ order }}">
+                  <input type="hidden" name="page" value="{{ page }}">
                   <input type="hidden" name="action" value="{{ 'buka_kembali' if p.finalized else 'finalisasi' }}">
                   <button class="btn btn-small" type="submit">{{ 'Buka Kembali' if p.finalized else 'Finalisasi' }}</button>
                 </form>
@@ -65,6 +82,47 @@
         <p class="muted">Belum ada peserta{% if q %} yang cocok dengan pencarian{% endif %}.</p>
       {% endif %}
     </div>
+
+    <!-- Pagination: 15 peserta per halaman -->
+    {% if total > 0 %}
+    <div class="pagination">
+      <span class="muted">Menampilkan {{ start + 1 }}–{{ start + peserta|length }} dari {{ total }} peserta</span>
+
+      {% if total_pages > 1 %}
+      <div class="pager">
+        {% if page > 1 %}
+          <a href="{{ url_for('admin_dashboard', q=q or None, sort=sort, order=order, page=page - 1) }}">← Sebelumnya</a>
+        {% else %}
+          <span class="disabled">← Sebelumnya</span>
+        {% endif %}
+
+        {% if page_numbers[0] > 1 %}
+          <a href="{{ url_for('admin_dashboard', q=q or None, sort=sort, order=order, page=1) }}">1</a>
+          {% if page_numbers[0] > 2 %}<span class="disabled">…</span>{% endif %}
+        {% endif %}
+
+        {% for n in page_numbers %}
+          {% if n == page %}
+            <span class="current">{{ n }}</span>
+          {% else %}
+            <a href="{{ url_for('admin_dashboard', q=q or None, sort=sort, order=order, page=n) }}">{{ n }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_numbers[-1] < total_pages %}
+          {% if page_numbers[-1] < total_pages - 1 %}<span class="disabled">…</span>{% endif %}
+          <a href="{{ url_for('admin_dashboard', q=q or None, sort=sort, order=order, page=total_pages) }}">{{ total_pages }}</a>
+        {% endif %}
+
+        {% if page < total_pages %}
+          <a href="{{ url_for('admin_dashboard', q=q or None, sort=sort, order=order, page=page + 1) }}">Berikutnya →</a>
+        {% else %}
+          <span class="disabled">Berikutnya →</span>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
   </div>
 </body>
 </html>
